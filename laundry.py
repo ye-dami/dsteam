@@ -104,108 +104,14 @@ alarm_minute = alarm_time.minute
 
 # JavaScript로 플랫폼 감지 및 알람 설정
 alarm_component = f"""
-<script>
-function setPhoneAlarm() {{
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    const hour = {alarm_hour};
-    const minute = {alarm_minute};
-    
-    // Android 감지
-    if (/android/i.test(userAgent)) {{
-        // Android 알람 인텐트
-        const androidUrl = `intent://alarm#Intent;scheme=alarm;action=android.intent.action.SET_ALARM;i.android.intent.extra.alarm.HOUR=${{hour}};i.android.intent.extra.alarm.MINUTES=${{minute}};S.android.intent.extra.alarm.MESSAGE=세탁완료!;end`;
-        window.location.href = androidUrl;
-    }}
-    // iOS 감지
-    else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {{
-        alert('시계 앱을 열어 ' + hour + '시 ' + minute + '분 알람을 설정해주세요!');
-        // iOS 시계 앱 열기 시도
-        setTimeout(() => {{
-            window.location.href = 'clock-alarm://';
-        }}, 100);
-    }}
-    // PC나 기타 기기
-    else {{
-        alert('모바일 기기에서 이용해주세요!\\n\\nPC에서는 브라우저 알림을 사용하세요.');
-    }}
-}}
-
-// 웹 알림 (백업용)
-function setWebNotification() {{
-    if (!("Notification" in window)) {{
-        alert("이 브라우저는 알림을 지원하지 않습니다.");
-        return;
-    }}
-    
-    Notification.requestPermission().then(permission => {{
-        if (permission === "granted") {{
-            alert("✅ 브라우저 알림이 설정되었습니다!\\n50분 후에 알림이 울립니다.");
-            
-            // 50분 = 3,000,000ms
-            setTimeout(() => {{
-                new Notification("🧺 세탁 완료!", {{
-                    body: "세탁기를 확인하세요!",
-                    requireInteraction: true,
-                    tag: 'laundry-alarm'
-                }});
-                
-                // 알림음 재생
-                try {{
-                    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBzKH0fPTgjMGHm7A7+OZUREOVKXX8bllHAU+lt7xwHMoByJ+zPLaizsIGGS57OihUhELTKXm8LdnHgU7k9ry0H4sBSJ7yvLajTsIF2W57OmiUhIMTKTl8LhnHgY8lNvyz4IrBSF6y/LajjwJGGS56+mjUxINTKXl8LhnHwU7lNry0H8sBSF7y/LbjjwJGGO46+mjUxINTKXl8LhnHwU7lNvy0H8sBSF7y/LbjjwJGGO46+mjUxINTKXl8LhnHwU7lNvy0H8sBSF7y/LbjjwJGGO46+mjUxINTKXl8LhnHwU7lNvy0H8sBSF7y/LbjjwJGGO46+mjUxINTKXl8LhnHwU7lNvy0H8sBSF7y/LbjjwJGGO46+mjUxINTKXl8LhnHwU7lNvy0H8sBSF7y/LbjjwJGGO46+mjUxINTKXl8LhnHwU7lNvy0H8sBSF7y/LbjjwJGGO46+mjUxINTKXl8LhnHwU7lNvy0H8sBSF7y/LbjjwJGGO46+mjUxINTKXl8LhnHwU7lNvy0H8sBSF7y/LbjjwJGGO46+mjUxINTKXl8LhnHwU7lNvy0H8sBSF7y/Lb');
-                    audio.play();
-                }} catch(e) {{
-                    console.log('Audio playback failed:', e);
-                }}
-            }}, 3000000);
-        }} else {{
-            alert("❌ 알림 권한이 거부되었습니다.\\n브라우저 설정에서 알림을 허용해주세요.");
-        }}
-    }});
-}}
-</script>
-
-<style>
-.alarm-btn {{
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px 40px;
-    font-size: 18px;
-    font-weight: bold;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    width: 100%;
-    margin: 10px 0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    transition: all 0.3s;
-}}
-.alarm-btn:hover {{
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-}}
-.alarm-btn:active {{
-    transform: translateY(0);
-}}
-.web-alarm-btn {{
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}}
-</style>
-
-<div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 15px;">
-    <h3 style="margin-bottom: 20px;">🔔 알람 시간: {alarm_hour:02d}시 {alarm_minute:02d}분</h3>
-    
-    <button onclick="setPhoneAlarm()" class="alarm-btn">
-        📱 핸드폰 알람 설정 (50분 후)
-    </button>
-    
-    <button onclick="setWebNotification()" class="alarm-btn web-alarm-btn">
-        🌐 브라우저 알림 설정 (백업용)
-    </button>
-    
-    <p style="color: #666; margin-top: 20px; font-size: 14px;">
-        💡 <strong>Android</strong>: 알람 앱이 자동으로 열립니다<br>
-        💡 <strong>iPhone</strong>: 시계 앱에서 수동으로 설정해주세요<br>
-        💡 <strong>PC</strong>: 브라우저 알림을 사용하세요
+<div style="padding: 20px; background: #1e1e1e; border-radius: 10px; color: white; text-align: center;">
+    <h2 style="color: #4CAF50;">⏰ 세탁 완료 예정 시간</h2>
+    <p style="font-size: 48px; font-weight: bold; margin: 20px 0;">
+        {alarm_hour:02d}:{alarm_minute:02d}
+    </p>
+    <p style="font-size: 18px; color: #aaa;">약 50분 후</p>
+    <p style="font-size: 14px; color: #888; margin-top: 20px;">
+        💡 이 시간에 돌아오시면 세탁물을 바로 꺼낼 수 있어요!
     </p>
 </div>
 """
@@ -263,4 +169,5 @@ for i, (start, end, label) in enumerate(key_hours):
         st.write(f"{emoji}")
 
 st.caption("⏰ **서비스 운영시간**: 오전 7시 ~ 오후 9시 (21시)")
+
 st.caption("💤 **운영 종료**: 오후 10시 (22시) ~ 오전 6시")
