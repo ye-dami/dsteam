@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta  # timedelta 추가!
 import streamlit.components.v1 as components
+import pytz
 
 st.set_page_config(page_title="세탁기 예약", page_icon="🧺", layout="wide")
 
@@ -18,7 +19,8 @@ def load_data():
 df = load_data()
 
 # 현재 시간
-now = datetime.now()
+kst = pytz.timezone('Asia/Seoul')
+now = datetime.now(kst)
 current_hour = now.hour
 
 col1, col2 = st.columns([1, 2])
@@ -243,4 +245,5 @@ for i, (start, end, label) in enumerate(key_hours):
 st.caption("⏰ **서비스 운영시간**: 오전 7시 ~ 오후 9시 (21시)")
 
 st.caption("💤 **운영 종료**: 오후 10시 (22시) ~ 오전 6시")
+
 
