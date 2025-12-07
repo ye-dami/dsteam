@@ -101,7 +101,7 @@ st.subheader("⏰ 세탁 완료 알람")
 
 # 알람 시간 계산 (50분 고정)
 wash_time = 50
-alarm_time = datetime.now() + timedelta(minutes=wash_time)
+alarm_time = now() + timedelta(minutes=wash_time)
 alarm_hour = alarm_time.hour
 alarm_minute = alarm_time.minute
 
@@ -245,5 +245,6 @@ for i, (start, end, label) in enumerate(key_hours):
 st.caption("⏰ **서비스 운영시간**: 오전 7시 ~ 오후 9시 (21시)")
 
 st.caption("💤 **운영 종료**: 오후 10시 (22시) ~ 오전 6시")
+
 
 
