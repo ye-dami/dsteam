@@ -97,28 +97,100 @@ with col2:
 st.divider()
 st.subheader("⏰ 세탁 완료 알람")
 
-# 알람 시간 계산
-alarm_time = datetime.now() + timedelta(minutes=50)
+# 알람 시간 계산 (50분 고정)
+wash_time = 50
+alarm_time = datetime.now() + timedelta(minutes=wash_time)
 alarm_hour = alarm_time.hour
 alarm_minute = alarm_time.minute
 
-# JavaScript로 플랫폼 감지 및 알람 설정
+col_alarm1, col_alarm2 = st.columns([1, 1])
+
+with col_alarm1:
+    st.info(f"### 🕐 완료 예정 시간\n# {alarm_hour:02d}시 {alarm_minute:02d}분")
+    st.caption(f"약 {wash_time}분 후에 세탁이 완료됩니다")
+
+with col_alarm2:
+    st.info("### 📱 알람 설정하기")
+    st.caption("아래 버튼을 눌러 알람을 설정하세요")
+
+# 알람 컴포넌트 HTML (모바일 알람 앱 연동)
 alarm_component = f"""
-<div style="padding: 20px; background: #1e1e1e; border-radius: 10px; color: white; text-align: center;">
-    <h2 style="color: #4CAF50;">⏰ 세탁 완료 예정 시간</h2>
-    <p style="font-size: 48px; font-weight: bold; margin: 20px 0;">
+<div style="padding: 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            border-radius: 15px; color: white; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+    <h2 style="color: white; margin-bottom: 15px;">⏰ 알람 설정</h2>
+    <div style="font-size: 56px; font-weight: bold; margin: 20px 0; font-family: 'Arial', sans-serif;">
         {alarm_hour:02d}:{alarm_minute:02d}
-    </p>
-    <p style="font-size: 18px; color: #aaa;">약 50분 후</p>
-    <p style="font-size: 14px; color: #888; margin-top: 20px;">
-        💡 이 시간에 돌아오시면 세탁물을 바로 꺼낼 수 있어요!
-    </p>
+    </div>
+    <p style="font-size: 18px; color: #f0f0f0; margin-bottom: 25px;">세탁 완료 예정 시간</p>
+    
+    <button onclick="setAlarm()" style="
+        background: white;
+        color: #667eea;
+        border: none;
+        padding: 15px 40px;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 25px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        transition: all 0.3s;
+    " onmouseover="this.style.transform='scale(1.05)'" 
+       onmouseout="this.style.transform='scale(1)'">
+        🔔 알람 설정하기
+    </button>
+    
+    <p id="status" style="margin-top: 15px; font-size: 14px; color: #f0f0f0;"></p>
 </div>
+
+<script>
+function setAlarm() {{
+    const hour = {alarm_hour};
+    const minute = {alarm_minute};
+    const statusEl = document.getElementById('status');
+    
+    // iOS: Clock 앱 열기
+    const iosURL = `clock-alarm://`;
+    
+    // Android: 알람 설정 인텐트
+    const androidURL = `intent://alarm?hour=${{hour}}&minutes=${{minute}}#Intent;scheme=android.intent.action.SET_ALARM;end`;
+    
+    // 범용 알람 URL (fallback)
+    const fallbackURL = `https://www.google.com/search?q=set+alarm+for+${{hour}}:${{minute}}`;
+    
+    // 사용자 에이전트 확인
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(userAgent);
+    const isAndroid = /android/.test(userAgent);
+    
+    statusEl.textContent = '⏳ 알람 앱을 여는 중...';
+    
+    try {{
+        if (isIOS) {{
+            // iOS: 시계 앱 열기
+            window.location.href = iosURL;
+            setTimeout(() => {{
+                statusEl.textContent = '✅ 시계 앱에서 {alarm_hour:02d}:{alarm_minute:02d}로 알람을 설정해주세요!';
+            }}, 1000);
+        }} else if (isAndroid) {{
+            // Android: 알람 설정 화면으로 이동
+            window.location.href = androidURL;
+            setTimeout(() => {{
+                statusEl.textContent = '✅ 알람이 설정되었습니다!';
+            }}, 1000);
+        }} else {{
+            // PC나 기타: 새 탭으로 안내
+            window.open(fallbackURL, '_blank');
+            statusEl.textContent = '💡 모바일에서는 자동으로 알람 앱이 열립니다!';
+        }}
+    }} catch (error) {{
+        statusEl.textContent = '⚠️ 알람 앱을 열 수 없습니다. 수동으로 {alarm_hour:02d}:{alarm_minute:02d}에 알람을 설정해주세요.';
+    }}
+}}
+</script>
 """
 
 # 컴포넌트 렌더링
-components.html(alarm_component, height=350)
-
+components.html(alarm_component, height=380)
 # 전체 현황
 st.divider()
 st.subheader("📊 시간대별 혼잡도 (7시~23시)")
@@ -171,3 +243,4 @@ for i, (start, end, label) in enumerate(key_hours):
 st.caption("⏰ **서비스 운영시간**: 오전 7시 ~ 오후 9시 (21시)")
 
 st.caption("💤 **운영 종료**: 오후 10시 (22시) ~ 오전 6시")
+
